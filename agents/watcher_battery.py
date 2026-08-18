@@ -2,21 +2,48 @@
 Watcher Agent — Battery / Power Group
 Subscribes to Redis, detects anomalies, calls RUL estimator, emits alerts.
 """
-import json
+import os, sys, json, time
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import redis
 import numpy as np
 from ingestion.history_reader import get_history
 from models.rul_estimator import estimate_rul
 
-REDIS_URL = "redis://localhost:6379"
+def _load_env():
+    env_path = os.path.join(os.path.dirname(__file__), '..', '.env')
+    if os.path.exists(env_path):
+        with open(env_path) as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith('#') and '=' in line:
+                    k, v = line.split('=', 1)
+                    os.environ.setdefault(k.strip(), v.strip())
 
-# Thresholds from parameter group definition
+_load_env()
+REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
+
 THRESHOLDS = {
-    "battery_soh":          ("below", 0.75),
-    "battery_temp_c":       ("above", 60.0),
-    "battery_voltage_v":    ("below", 21.5),
-    "battery_current_a":    ("above", 50.0),
+    "battery_soh":       ("below", 0.75),
+    "battery_temp_c":    ("above", 60.0),
+    "battery_voltage_v": ("below", 21.5),
+    "battery_current_a": ("above", 50.0),
 }
+
+_HARD = {
+    "battery_soh":       0.55,
+    "battery_temp_c":    85.0,
+    "battery_voltage_v": 19.0,
+    "battery_current_a": 60.0,
+}
+
+def _severity(val, threshold, direction):
+    ratio = abs(val - threshold) / (abs(threshold) + 1e-9)
+    if ratio > 0.20:
+        return "critical"
+    elif ratio > 0.08:
+        return "warning"
+    return "info"
 
 def check_anomaly(row: dict) -> list[dict]:
     alerts = []
@@ -27,68 +54,59 @@ def check_anomaly(row: dict) -> list[dict]:
         triggered = val < threshold if direction == "below" else val > threshold
         if triggered:
             alerts.append({
-                "agv_id":    row["agv_id"],
-                "group":     "battery",
-                "parameter": param,
-                "value":     round(float(val), 4),
-                "threshold": threshold,
-                "direction": direction,
-                "severity":  _severity(val, threshold, direction),
+                "agv_id":         row["agv_id"],
+                "group":          "battery",
+                "parameter":      param,
+                "value":          round(float(val), 4),
+                "threshold":      threshold,
+                "hard_threshold": _HARD[param],
+                "direction":      direction,
+                "severity":       _severity(val, threshold, direction),
+                "timestamp":      time.time(),
             })
     return alerts
-
-def _severity(val, threshold, direction):
-    ratio = abs(val - threshold) / (abs(threshold) + 1e-9)
-    if ratio > 0.20:
-        return "critical"
-    elif ratio > 0.08:
-        return "warning"
-    return "info"
 
 def run():
     r      = redis.from_url(REDIS_URL, decode_responses=True)
     pubsub = r.pubsub()
-
-    # Subscribe to all AGV battery channels
     pubsub.psubscribe("agv:*:telemetry")
     print("[watcher_battery] subscribed — listening ...")
-
-    alert_pipe = r   # reuse connection for publishing alerts
 
     for message in pubsub.listen():
         if message["type"] != "pmessage":
             continue
 
-        row     = json.loads(message["data"])
-        alerts  = check_anomaly(row)
+        row    = json.loads(message["data"])
+        alerts = check_anomaly(row)
 
         for alert in alerts:
             agv_id = alert["agv_id"]
 
-            # Get sensor history for RUL estimation
-            history = get_history(agv_id, alert["parameter"], n=60)
+            history = np.array(
+                get_history(agv_id, alert["parameter"], n=60),
+                dtype=float
+            )
 
             if len(history) >= 5:
                 rul = estimate_rul(agv_id, alert["parameter"], history)
-                alert["rul_hours"]    = rul.rul_hours
-                alert["rul_model"]    = rul.model_type
-                alert["confidence"]   = rul.confidence
-                alert["explanation"]  = rul.explanation
+                alert["rul_hours"]   = rul.rul_hours
+                alert["rul_model"]   = rul.model_type
+                alert["confidence"]  = rul.confidence
+                alert["explanation"] = rul.explanation
             else:
-                alert["rul_hours"]   = None
-                alert["explanation"] = "Insufficient history for RUL"
+                alert["rul_hours"]   = 99.0
+                alert["rul_model"]   = "none"
+                alert["confidence"]  = 0.0
+                alert["explanation"] = "Insufficient history for RUL estimation"
 
-            # Publish alert to diagnostician
-            alert_pipe.publish("alerts:battery", json.dumps(alert))
-
-            # Store latest alert in Redis for FastAPI
-            alert_pipe.set(f"alert:{agv_id}:battery", json.dumps(alert))
-            alert_pipe.rpush("alerts:all", json.dumps(alert))
-            alert_pipe.ltrim("alerts:all", -500, -1)
+            r.publish(f"alerts:battery", json.dumps(alert))
+            r.set(f"alert:{agv_id}:battery", json.dumps(alert))
+            r.rpush("alerts:all", json.dumps(alert))
+            r.ltrim("alerts:all", -500, -1)
 
             print(f"[watcher_battery] ALERT {agv_id} | "
                   f"{alert['parameter']}={alert['value']} | "
-                  f"RUL={alert.get('rul_hours','?')}h | "
+                  f"RUL={alert['rul_hours']}h ({alert['rul_model']}) | "
                   f"{alert['severity'].upper()}")
 
 if __name__ == "__main__":

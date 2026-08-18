@@ -1,0 +1,11 @@
+#!/bin/bash
+echo "Stopping all AGV services..."
+pkill -f "ingestion/streamer"
+pkill -f "agents/watcher"
+pkill -f "agents/diagnostician"
+pkill -f "agents/prioritizer"
+pkill -f "agents/orchestrator"
+pkill -f "agents/work_order"
+pkill -f "uvicorn api.main"
+pkill -f "streamlit run"
+echo "Done."

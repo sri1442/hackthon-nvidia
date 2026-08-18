@@ -65,7 +65,8 @@ def _gen_battery(n: int, fault: str | None, rng: np.random.Generator) -> dict:
     }
 
 # ── Group 2: Navigation / Localization ──────────────────────────────────────
-def _gen_navigation(n: int, fault: str | None, rng: np.random.Generator) -> dict:
+def _gen_navigation(n: int, fault: str | None, rng: np.random.Generator,
+                    agv_index: int = 0) -> dict:
     """
     Fault modes:
       'drift'     – heading error grows over time (encoder slip)
@@ -74,8 +75,15 @@ def _gen_navigation(n: int, fault: str | None, rng: np.random.Generator) -> dict
     heading_error         = rng.normal(0.0, 0.5, n).clip(-5.0, 5.0)
     localization_conf     = rng.normal(0.95, 0.02, n).clip(0.6, 1.0)
     path_deviation_m      = rng.normal(0.02, 0.01, n).clip(0.0, 0.5)
-    position_x            = np.cumsum(rng.normal(0.05, 0.01, n))  # random walk
-    position_y            = np.cumsum(rng.normal(0.05, 0.01, n))
+
+    # ── FIX: sinusoidal oval route spread across 50m × 30m warehouse ─────────
+    FLOOR_W, FLOOR_D = 50.0, 30.0
+    route_period = 100                                      # one lap per 100 ticks
+    phase = agv_index * (2 * np.pi / 10)                   # each AGV offset 36°
+    ticks = np.arange(n)
+    position_x = (FLOOR_W / 2) + (FLOOR_W * 0.4) * np.sin(2 * np.pi * ticks / route_period + phase)
+    position_y = (FLOOR_D / 2) + (FLOOR_D * 0.33) * np.cos(2 * np.pi * ticks / route_period + phase)
+    # ─────────────────────────────────────────────────────────────────────────
 
     if fault == "drift":
         heading_error += np.linspace(0, 8.0, n)
@@ -92,7 +100,6 @@ def _gen_navigation(n: int, fault: str | None, rng: np.random.Generator) -> dict
         "nav_localization_conf":    localization_conf.round(4),
         "nav_path_deviation_m":     path_deviation_m.round(4),
     }
-
 # ── Group 3: Drive / Motion ──────────────────────────────────────────────────
 def _gen_drive(n: int, fault: str | None, rng: np.random.Generator) -> dict:
     """
@@ -216,7 +223,7 @@ def generate_agv_fleet(
 
         row = {"timestamp": timestamps, "agv_id": agv_id}
         row.update(_gen_battery   (n_timesteps, profile.get("battery"),    rng))
-        row.update(_gen_navigation(n_timesteps, profile.get("navigation"),  rng))
+        row.update(_gen_navigation(n_timesteps, profile.get("navigation"),  rng, agv_index=i - 1))
         row.update(_gen_drive     (n_timesteps, profile.get("drive"),       rng))
         row.update(_gen_mechanical(n_timesteps, profile.get("mechanical"),  rng))
         row.update(_gen_safety    (n_timesteps, profile.get("safety"),      rng))
