@@ -78,7 +78,29 @@ export const ApprovalModal: React.FC<ApprovalModalProps> = ({ agv, onClose, onAp
         <div className="approval-modal-body">
           <div className="evidence-grid approval-grid">
             <Evidence label="Root cause" value={agv.issue || 'No active anomaly'} />
-            <Evidence label="RUL" value={`${agv.rul} hour${agv.rul === 1 ? '' : 's'}`} />
+            <div className="evidence">
+              <span>RUL</span>
+              <strong>
+                {agv.rulBreakdown && agv.rulBreakdown.length > 0 ? (
+                  <span style={{ display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'flex-start', textTransform: 'uppercase' }}>
+                    {agv.rulBreakdown.map((entry, index) => {
+                      const isCritical = entry.severity === 'critical' || entry.rul_hours <= 4;
+                      return (
+                        <span
+                          key={`${agv.id}-modal-rul-${index}`}
+                          className={isCritical ? 'danger-text' : ''}
+                          style={{ lineHeight: 1.2 }}
+                        >
+                          {entry.group} · {entry.rul_hours}h
+                        </span>
+                      );
+                    })}
+                  </span>
+                ) : (
+                  <span className={agv.rul <= 4 ? 'danger-text' : ''}>{agv.rul} hour{agv.rul === 1 ? '' : 's'}</span>
+                )}
+              </strong>
+            </div>
             <Evidence label="Motor temp" value={`${agv.motor}°C`} danger={agv.motor >= 85} />
             <Evidence label="AI confidence" value={agv.id === 'AGV-11' ? '96%' : '89%'} />
           </div>

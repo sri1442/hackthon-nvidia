@@ -30,9 +30,25 @@ export const AnomalyAlert: React.FC<AnomalyAlertProps> = ({ agv, rank, onClick }
       </h3>
       <p>{agv.issue}</p>
       <div className="alert-stats">
-        <span>
+        <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 4 }}>
           <strong>RUL</strong>
-          {agv.rul}h
+          {agv.rulBreakdown && agv.rulBreakdown.length > 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2, lineHeight: 1.2, textTransform: 'uppercase', paddingLeft: '8px' }}>
+              {agv.rulBreakdown.slice(0, 3).map((entry, index) => {
+                const isCritical = entry.severity === 'critical' || entry.rul_hours <= 4;
+                return (
+                  <div
+                    key={`${agv.id}-alert-rul-${index}`}
+                    className={isCritical ? 'danger-text' : ''}
+                  >
+                    {entry.group} · {entry.rul_hours}h
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <span className={agv.rul <= 4 ? 'danger-text' : ''}>{agv.rul}h</span>
+          )}
         </span>
         <span>
           <strong>Motor</strong>

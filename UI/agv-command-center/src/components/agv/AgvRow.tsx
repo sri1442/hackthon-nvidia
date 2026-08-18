@@ -42,7 +42,26 @@ export const AgvRow: React.FC<AgvRowProps> = ({ agv, isSelected, onClick, onDeta
         {agv.battery}%
       </span>
       <span className={agv.motor >= 85 ? 'danger-text' : ''}>{agv.motor}°C</span>
-      <span className={agv.rul <= 4 ? 'danger-text' : ''}>{agv.rul}h</span>
+      <span>
+        {agv.rulBreakdown && agv.rulBreakdown.length > 0 ? (
+          <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2, textTransform: 'uppercase' }}>
+            {agv.rulBreakdown.slice(0, 3).map((entry, index) => {
+              const isCritical = entry.severity === 'critical' || entry.rul_hours <= 4;
+              return (
+                <span
+                  key={`${agv.id}-${entry.group}-${index}`}
+                  className={isCritical ? 'danger-text' : ''}
+                  style={{ lineHeight: 1.2, whiteSpace: 'nowrap' }}
+                >
+                  {entry.group} · {entry.rul_hours}h
+                </span>
+              );
+            })}
+          </span>
+        ) : (
+          <span className={agv.rul <= 4 ? 'danger-text' : ''}>{agv.rul}h</span>
+        )}
+      </span>
       <span className="detail-action-wrap">
         <button
           type="button"

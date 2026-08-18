@@ -44,7 +44,26 @@ export const ApprovalPanel: React.FC<ApprovalPanelProps> = ({ agvs, onOpenDetail
               <strong>{agv.id}</strong>
             </span>
             <span className="action-text">{getRecommendedAction(agv.id)}</span>
-            <span className={agv.rul <= 4 ? 'danger-text' : ''}>{agv.rul}h</span>
+            <span>
+              {agv.rulBreakdown && agv.rulBreakdown.length > 0 ? (
+                <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2, textTransform: 'uppercase' }}>
+                  {agv.rulBreakdown.slice(0, 3).map((entry, index) => {
+                    const isCritical = entry.severity === 'critical' || entry.rul_hours <= 4;
+                    return (
+                      <span
+                        key={`${agv.id}-approval-rul-${index}`}
+                        className={isCritical ? 'danger-text' : ''}
+                        style={{ lineHeight: 1.2 }}
+                      >
+                        {entry.group} · {entry.rul_hours}h
+                      </span>
+                    );
+                  })}
+                </span>
+              ) : (
+                <span className={agv.rul <= 4 ? 'danger-text' : ''}>{agv.rul}h</span>
+              )}
+            </span>
             <span>{agv.id === 'AGV-11' ? '96%' : '89%'}</span>
             <span className="detail-action-wrap">
               <button

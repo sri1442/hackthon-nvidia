@@ -45,7 +45,26 @@ export const MaintenanceQueue: React.FC<MaintenanceQueueProps> = ({ agvs, onSele
             <strong>{agv.id}</strong>
             <span>{agv.issue}</span>
             <strong>{calculateAnomalyScore(agv).toFixed(1)}</strong>
-            <span className={agv.rul <= 4 ? 'danger-text' : ''}>{agv.rul}h</span>
+            <span>
+              {agv.rulBreakdown && agv.rulBreakdown.length > 0 ? (
+                <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2, textTransform: 'uppercase' }}>
+                  {agv.rulBreakdown.slice(0, 3).map((entry, index) => {
+                    const isCritical = entry.severity === 'critical' || entry.rul_hours <= 4;
+                    return (
+                      <span
+                        key={`${agv.id}-queue-rul-${index}`}
+                        className={isCritical ? 'danger-text' : ''}
+                        style={{ lineHeight: 1.2 }}
+                      >
+                        {entry.group} · {entry.rul_hours}h
+                      </span>
+                    );
+                  })}
+                </span>
+              ) : (
+                <span className={agv.rul <= 4 ? 'danger-text' : ''}>{agv.rul}h</span>
+              )}
+            </span>
             <span className="action-text">{getRecommendedAction(agv.id)}</span>
           </button>
         ))}
