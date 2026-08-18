@@ -19,15 +19,17 @@ export const AnomalyList: React.FC<AnomalyListProps> = ({ agvs, onSelectAgv }) =
   return (
     <section className="panel alerts-panel">
       <SectionTitle icon={<AlertTriangle />} title="Active Anomaly Alerts" badge={`${anomalies.length} ACTIVE`} />
-      <div className="alert-grid">
-        {anomalies.map((agv, index) => (
-          <AnomalyAlert
-            key={agv.id}
-            agv={agv}
-            rank={index}
-            onClick={() => onSelectAgv(agv.id)}
-          />
-        ))}
+      <div className="alert-grid-scroll">
+        <div className="alert-grid">
+          {anomalies.map((agv, index) => (
+            <AnomalyAlert
+              key={agv.id}
+              agv={agv}
+              rank={index}
+              onClick={() => onSelectAgv(agv.id)}
+            />
+          ))}
+        </div>
       </div>
     </section>
   );

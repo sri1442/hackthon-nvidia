@@ -1126,11 +1126,39 @@ main {
     margin-bottom: 14px
 }
 
+.alert-grid-scroll {
+    max-height: 240px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 12px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(140, 170, 200, .5) rgba(12, 18, 24, .8)
+}
+
+.alert-grid-scroll::-webkit-scrollbar {
+    width: 9px
+}
+
+.alert-grid-scroll::-webkit-scrollbar-track {
+    background: rgba(148, 163, 184, .08);
+    border-radius: 999px
+}
+
+.alert-grid-scroll::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #2d4058, #1b2534);
+    border: 2px solid rgba(13, 19, 28, .9);
+    border-radius: 999px
+}
+
+.alert-grid-scroll::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #3b688f, #21435d)
+}
+
 .alert-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(220px, 1fr));
     gap: 10px;
-    padding: 12px
+    align-items: stretch
 }
 
 .alert-card {
@@ -1139,7 +1167,8 @@ main {
     border-radius: 9px;
     text-align: left;
     padding: 12px;
-    position: relative
+    position: relative;
+    width: 100%
 }
 
 .alert-card:hover {
@@ -1237,7 +1266,7 @@ main {
 .q-head,
 .q-row {
     display: grid;
-    grid-template-columns: .55fr .7fr 2.1fr .65fr .55fr 1.35fr;
+    grid-template-columns: .55fr .7fr 2.1fr .65fr 1.55fr 1.35fr;
     align-items: center;
     gap: 10px
 }
@@ -1295,7 +1324,7 @@ main {
 .approval-table-head,
 .approval-row {
     display: grid;
-    grid-template-columns: 1.1fr 1.5fr .7fr .9fr .46fr;
+    grid-template-columns: 1.1fr 1.5fr 1fr .9fr .46fr;
     align-items: center;
     gap: 8px
 }
