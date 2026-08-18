@@ -313,7 +313,7 @@ main {
 .table-head,
 .fleet-row {
     display: grid;
-    grid-template-columns: minmax(80px, 1.2fr) minmax(90px, .95fr) minmax(100px, 1.25fr) minmax(70px, .8fr) minmax(140px, 1.5fr) 46px;
+    grid-template-columns: minmax(80px, 1.2fr) minmax(72px, .8fr) minmax(80px, .75fr) minmax(90px, 1fr) minmax(58px, .6fr) minmax(140px, 1.4fr) 46px;
     align-items: center;
     gap: 8px
 }
@@ -334,18 +334,18 @@ main {
     width: 100%
 }
 
-.table-head > span:nth-child(5),
-.fleet-row > span:nth-child(5) {
+.table-head > span:nth-child(6),
+.fleet-row > span:nth-child(6) {
     align-items: flex-start
 }
 
-.table-head > span:nth-child(6),
-.fleet-row > span:nth-child(6) {
+.table-head > span:nth-child(7),
+.fleet-row > span:nth-child(7) {
     justify-content: flex-end
 }
 
-.fleet-row > span:nth-child(5) > span,
-.fleet-row > span:nth-child(5) > span > span {
+.fleet-row > span:nth-child(6) > span,
+.fleet-row > span:nth-child(6) > span > span {
     width: 100%;
     min-width: 0
 }
@@ -395,23 +395,23 @@ main {
     color: #d5dce6
 }
 
-.status-dot {
+.severity-dot {
     width: 6px;
     height: 6px;
     border-radius: 50%;
     background: #48d89b
 }
 
-.status-dot.warning {
+.severity-dot.warning {
     background: #efb766
 }
 
-.status-dot.critical {
+.severity-dot.critical {
     background: #f16d75;
     box-shadow: 0 0 7px #f16d75
 }
 
-.status-badge {
+.severity-badge {
     display: inline-flex;
     padding: 3px 6px;
     border-radius: 5px;
@@ -420,17 +420,17 @@ main {
     letter-spacing: .04em
 }
 
-.status-badge.healthy {
+.severity-badge.healthy {
     color: #55dba0;
     background: #10251d
 }
 
-.status-badge.warning {
+.severity-badge.warning {
     color: #efbf70;
     background: #2a2114
 }
 
-.status-badge.critical {
+.severity-badge.critical {
     color: #f07b82;
     background: #2b1519
 }

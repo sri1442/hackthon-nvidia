@@ -5,7 +5,8 @@
 import React from 'react';
 import { ChevronRight } from 'lucide-react';
 import { AGV } from '../../services/telemetryService';
-import { StatusBadge } from '../common/StatusBadge';
+import { SeverityBadge } from '../common/SeverityBadge';
+import { formatRulHours } from '../../utils/formatRul';
 
 interface AgvRowProps {
   agv: AGV;
@@ -29,11 +30,12 @@ export const AgvRow: React.FC<AgvRowProps> = ({ agv, isSelected, onClick, onDeta
       tabIndex={0}
     >
       <span className="agv-name">
-        <span className={`status-dot ${agv.status.toLowerCase()}`}></span>
+        <span className={`severity-dot ${agv.severity.toLowerCase()}`}></span>
         <strong>{agv.id}</strong>
       </span>
+      <span>{agv.status}</span>
       <span>
-        <StatusBadge status={agv.status} />
+        <SeverityBadge severity={agv.severity} />
       </span>
       <span className="bar-value">
         <span className="tiny-bar">
@@ -44,7 +46,7 @@ export const AgvRow: React.FC<AgvRowProps> = ({ agv, isSelected, onClick, onDeta
       <span className={agv.motor >= 85 ? 'danger-text' : ''}>{agv.motor}°C</span>
       <span>
         {agv.rulBreakdown && agv.rulBreakdown.length > 0 ? (
-          <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2, textTransform: 'uppercase' }}>
+          <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2 }}>
             {agv.rulBreakdown.slice(0, 3).map((entry, index) => {
               const isCritical = entry.severity === 'critical' || entry.rul_hours <= 4;
               return (
@@ -53,13 +55,15 @@ export const AgvRow: React.FC<AgvRowProps> = ({ agv, isSelected, onClick, onDeta
                   className={isCritical ? 'danger-text' : ''}
                   style={{ lineHeight: 1.2, whiteSpace: 'nowrap' }}
                 >
-                  {entry.group} · {entry.rul_hours}h
+                  <span style={{ textTransform: 'uppercase' }}>{entry.group}</span>
+                  {' · '}
+                  <span style={{ textTransform: 'none' }}>{formatRulHours(entry.rul_hours)}</span>
                 </span>
               );
             })}
           </span>
         ) : (
-          <span className={agv.rul <= 4 ? 'danger-text' : ''}>{agv.rul}h</span>
+          <span className={agv.rul <= 4 ? 'danger-text' : ''}>{formatRulHours(agv.rul)}</span>
         )}
       </span>
       <span className="detail-action-wrap">

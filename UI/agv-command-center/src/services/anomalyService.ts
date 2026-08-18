@@ -15,14 +15,15 @@ export interface AnomalyData {
 
 export function calculateAnomalyScore(agv: AGV): number {
   let score = 0;
-  
-  if (agv.status === 'Critical') score += 10;
-  if (agv.status === 'Warning') score += 5;
-  
+  const severity = String((agv.rawState?.severity ?? agv.severity)).toLowerCase();
+
+  if (severity === 'critical') score += 10;
+  if (severity === 'warning') score += 5;
+
   if (agv.rul <= 4) score += 5;
   if (agv.motor >= 85) score += 3;
   if (agv.battery <= 40) score += 2;
-  
+
   return Math.min(score, 10);
 }
 

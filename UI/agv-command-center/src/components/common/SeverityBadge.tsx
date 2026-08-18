@@ -1,15 +1,15 @@
 /**
- * StatusBadge Component - Displays status with styling
+ * SeverityBadge Component - Displays severity with styling
  */
 
 import React from 'react';
 
-interface StatusBadgeProps {
-  status: 'Healthy' | 'Warning' | 'Critical';
+interface SeverityBadgeProps {
+  severity: 'Healthy' | 'Warning' | 'Critical';
 }
 
-export const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
-  const statusStyles: Record<string, React.CSSProperties> = {
+export const SeverityBadge: React.FC<SeverityBadgeProps> = ({ severity }) => {
+  const severityStyles: Record<string, React.CSSProperties> = {
     Healthy: { 
       padding: '4px 8px', 
       borderRadius: '4px', 
@@ -37,8 +37,8 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
   };
 
   return (
-    <span className={`status-badge ${status.toLowerCase()}`}>
-      {status}
+    <span className={`severity-badge ${severity.toLowerCase()}`}>
+      {severity}
     </span>
   );
 };

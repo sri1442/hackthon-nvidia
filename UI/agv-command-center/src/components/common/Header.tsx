@@ -1,5 +1,5 @@
 /**
- * Header Component - Top navigation and status bar
+ * Header Component - Top navigation and severity bar
  */
 
 import React from 'react';

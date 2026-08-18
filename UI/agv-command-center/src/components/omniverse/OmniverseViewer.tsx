@@ -42,9 +42,9 @@ export const OmniverseViewer: React.FC<OmniverseViewerProps> = ({
         {agvs.map(agv => (
           <button
             key={agv.id}
-            title={`${agv.id} · ${agv.status}`}
+            title={`${agv.id} · ${agv.severity}`}
             onClick={() => onSelectAgv(agv.id)}
-            className={`twin-agv ${agv.status.toLowerCase()} ${selectedAgv.id === agv.id ? 'focused' : ''}`}
+            className={`twin-agv ${agv.severity.toLowerCase()} ${selectedAgv.id === agv.id ? 'focused' : ''}`}
             style={{ left: `${agv.x}%`, top: `${agv.y}%` }}
           >
             <span></span>

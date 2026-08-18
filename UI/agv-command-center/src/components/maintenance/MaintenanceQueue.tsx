@@ -7,6 +7,7 @@ import { ShieldCheck } from 'lucide-react';
 import { AGV } from '../../services/telemetryService';
 import { SectionTitle } from '../common/SectionTitle';
 import { calculateAnomalyScore } from '../../services/anomalyService';
+import { formatRulHours } from '../../utils/formatRul';
 
 interface MaintenanceQueueProps {
   agvs: AGV[];
@@ -47,7 +48,7 @@ export const MaintenanceQueue: React.FC<MaintenanceQueueProps> = ({ agvs, onSele
             <strong>{calculateAnomalyScore(agv).toFixed(1)}</strong>
             <span>
               {agv.rulBreakdown && agv.rulBreakdown.length > 0 ? (
-                <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2, textTransform: 'uppercase' }}>
+                <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2 }}>
                   {agv.rulBreakdown.slice(0, 3).map((entry, index) => {
                     const isCritical = entry.severity === 'critical' || entry.rul_hours <= 4;
                     return (
@@ -56,13 +57,15 @@ export const MaintenanceQueue: React.FC<MaintenanceQueueProps> = ({ agvs, onSele
                         className={isCritical ? 'danger-text' : ''}
                         style={{ lineHeight: 1.2 }}
                       >
-                        {entry.group} · {entry.rul_hours}h
+                        <span style={{ textTransform: 'uppercase' }}>{entry.group}</span>
+                        {' · '}
+                        <span style={{ textTransform: 'none' }}>{formatRulHours(entry.rul_hours)}</span>
                       </span>
                     );
                   })}
                 </span>
               ) : (
-                <span className={agv.rul <= 4 ? 'danger-text' : ''}>{agv.rul}h</span>
+                <span className={agv.rul <= 4 ? 'danger-text' : ''}>{formatRulHours(agv.rul)}</span>
               )}
             </span>
             <span className="action-text">{getRecommendedAction(agv.id)}</span>

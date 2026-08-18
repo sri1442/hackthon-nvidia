@@ -6,6 +6,7 @@ import React from 'react';
 import { ChevronRight, ShieldCheck } from 'lucide-react';
 import { AGV } from '../../services/telemetryService';
 import { SectionTitle } from '../common/SectionTitle';
+import { formatRulHours } from '../../utils/formatRul';
 
 interface ApprovalPanelProps {
   agvs: AGV[];
@@ -40,13 +41,13 @@ export const ApprovalPanel: React.FC<ApprovalPanelProps> = ({ agvs, onOpenDetail
         {approvalQueue.map(agv => (
           <div className="approval-row" key={agv.id}>
             <span className="agv-name">
-              <span className={`status-dot ${agv.status.toLowerCase()}`}></span>
+              <span className={`severity-dot ${agv.severity.toLowerCase()}`}></span>
               <strong>{agv.id}</strong>
             </span>
             <span className="action-text">{getRecommendedAction(agv.id)}</span>
             <span>
               {agv.rulBreakdown && agv.rulBreakdown.length > 0 ? (
-                <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2, textTransform: 'uppercase' }}>
+                <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2 }}>
                   {agv.rulBreakdown.slice(0, 3).map((entry, index) => {
                     const isCritical = entry.severity === 'critical' || entry.rul_hours <= 4;
                     return (
@@ -55,13 +56,15 @@ export const ApprovalPanel: React.FC<ApprovalPanelProps> = ({ agvs, onOpenDetail
                         className={isCritical ? 'danger-text' : ''}
                         style={{ lineHeight: 1.2 }}
                       >
-                        {entry.group} · {entry.rul_hours}h
+                        <span style={{ textTransform: 'uppercase' }}>{entry.group}</span>
+                        {' · '}
+                        <span style={{ textTransform: 'none' }}>{formatRulHours(entry.rul_hours)}</span>
                       </span>
                     );
                   })}
                 </span>
               ) : (
-                <span className={agv.rul <= 4 ? 'danger-text' : ''}>{agv.rul}h</span>
+                <span className={agv.rul <= 4 ? 'danger-text' : ''}>{formatRulHours(agv.rul)}</span>
               )}
             </span>
             <span>{agv.id === 'AGV-11' ? '96%' : '89%'}</span>

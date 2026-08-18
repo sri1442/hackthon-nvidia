@@ -11,9 +11,18 @@ import {
   Alert
 } from '../data/mockData';
 
+export const AgvStatus = {
+  Running: 'Running',
+  Stopped: 'Stopped',
+  UnderMaintenance: 'Under Maintenance'
+} as const;
+
+export type AgvStatus = typeof AgvStatus[keyof typeof AgvStatus];
+
 export interface AGV {
   id: string;
-  status: 'Healthy' | 'Warning' | 'Critical';
+  status: AgvStatus;
+  severity: 'Healthy' | 'Warning' | 'Critical';
   battery: number;
   motor: number;
   rul: number;
@@ -71,8 +80,8 @@ interface HealthSignal {
   explanation?: string;
 }
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8001';
-const USE_MOCK = import.meta.env.VITE_USE_MOCK !== 'false';
+const API_BASE = 'https://api-service-up0n6ca21.apps.run.brev.nvidia.com';
+const USE_MOCK = false;
 
 const severityRank: Record<string, number> = {
   healthy: 0,
@@ -80,6 +89,14 @@ const severityRank: Record<string, number> = {
   warning: 2,
   critical: 3
 };
+
+export function normalizeSeverity(severity?: string): 'Healthy' | 'Warning' | 'Critical' {
+  const value = String(severity ?? 'healthy').toLowerCase();
+
+  if (value === 'critical') return 'Critical';
+  if (value === 'warning') return 'Warning';
+  return 'Healthy';
+}
 
 export function getEffectiveRul(state: AgvState, signals: HealthSignal[] = normalizeHealthSignals(state)): number {
   const rulValues = signals
@@ -99,7 +116,7 @@ export function isCriticalRulEntry(entry: { rul_hours: number; severity?: string
   return severity === 'critical' || entry.rul_hours <= 4;
 }
 
-export function getEffectiveAgvStatus(state: AgvState, signals: HealthSignal[] = normalizeHealthSignals(state)): 'Healthy' | 'Warning' | 'Critical' {
+export function getEffectiveAgvSeverity(state: AgvState, signals: HealthSignal[] = normalizeHealthSignals(state)): 'Healthy' | 'Warning' | 'Critical' {
   const maxRank = signals.reduce((highest, signal) => {
     const current = severityRank[String(signal.severity ?? state.severity ?? 'healthy').toLowerCase()] ?? 0;
     return Math.max(highest, current);
@@ -230,14 +247,14 @@ export async function fetchFleetSummary(): Promise<FleetSummary> {
         const signals = normalizeHealthSignals(state);
         return {
           ...state,
-          severity: getEffectiveAgvStatus(state, signals),
+          severity: normalizeSeverity(state.severity),
           rul_hours: getEffectiveRul(state, signals)
         };
       });
 
-      const healthy = currentState.filter(s => getEffectiveAgvStatus(s) === 'Healthy').length;
-      const warning = currentState.filter(s => getEffectiveAgvStatus(s) === 'Warning').length;
-      const critical = currentState.filter(s => getEffectiveAgvStatus(s) === 'Critical').length;
+      const healthy = currentState.filter(s => normalizeSeverity(s.severity) === 'Healthy').length;
+      const warning = currentState.filter(s => normalizeSeverity(s.severity) === 'Warning').length;
+      const critical = currentState.filter(s => normalizeSeverity(s.severity) === 'Critical').length;
 
       return {
         total_agvs: currentState.length,
@@ -281,7 +298,7 @@ export async function fetchCurrentState(): Promise<AgvState[]> {
 
 export function mapStateToAgv(state: AgvState, uiOverrides: Partial<AGV> = {}): AGV {
   const signals = normalizeHealthSignals(state);
-  const status = getEffectiveAgvStatus(state, signals);
+  const severity = normalizeSeverity(state.severity);
   const effectiveRul = getEffectiveRul(state, signals);
   const navigationFault = signals.some((signal) => {
     const group = (signal.group ?? '').toLowerCase();
@@ -294,7 +311,8 @@ export function mapStateToAgv(state: AgvState, uiOverrides: Partial<AGV> = {}): 
 
   return {
     id: state.agv_id,
-    status,
+    status: uiOverrides.status ?? AgvStatus.Running,
+    severity,
     battery: Math.round(state.battery_soh * 100),
     motor: Math.round(state.drive_motor_current_a),
     rul: effectiveRul,

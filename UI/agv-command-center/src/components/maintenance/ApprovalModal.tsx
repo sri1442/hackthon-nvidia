@@ -5,7 +5,8 @@
 import React, { useState } from 'react';
 import { Bot, CheckCircle2, XCircle } from 'lucide-react';
 import { AGV } from '../../services/telemetryService';
-import { StatusBadge } from '../common/StatusBadge';
+import { SeverityBadge } from '../common/SeverityBadge';
+import { formatRulHours } from '../../utils/formatRul';
 
 interface ApprovalModalProps {
   agv: AGV;
@@ -17,7 +18,7 @@ interface ApprovalModalProps {
 
 interface EvidenceProps {
   label: string;
-  value: string;
+  value: React.ReactNode;
   danger?: boolean;
 }
 
@@ -64,7 +65,7 @@ export const ApprovalModal: React.FC<ApprovalModalProps> = ({ agv, onClose, onAp
             </h3>
           </div>
           <div className="modal-actions">
-            <StatusBadge status={agv.status} />
+            <SeverityBadge severity={agv.severity} />
             <button
               type="button"
               className="close-modal-btn"
@@ -80,24 +81,33 @@ export const ApprovalModal: React.FC<ApprovalModalProps> = ({ agv, onClose, onAp
             <Evidence label="Root cause" value={agv.issue || 'No active anomaly'} />
             <div className="evidence">
               <span>RUL</span>
-              <strong>
+              <strong style={{ display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'flex-start' }}>
                 {agv.rulBreakdown && agv.rulBreakdown.length > 0 ? (
-                  <span style={{ display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'flex-start', textTransform: 'uppercase' }}>
-                    {agv.rulBreakdown.map((entry, index) => {
-                      const isCritical = entry.severity === 'critical' || entry.rul_hours <= 4;
-                      return (
-                        <span
-                          key={`${agv.id}-modal-rul-${index}`}
-                          className={isCritical ? 'danger-text' : ''}
-                          style={{ lineHeight: 1.2 }}
-                        >
-                          {entry.group} · {entry.rul_hours}h
-                        </span>
-                      );
-                    })}
-                  </span>
+                  agv.rulBreakdown.map((entry, index) => {
+                    const isCritical = entry.severity === 'critical' || entry.rul_hours <= 4;
+                    return (
+                      <span
+                        key={`${agv.id}-modal-rul-${index}`}
+                        className={isCritical ? 'danger-text' : ''}
+                        style={{
+                          lineHeight: 1.2,
+                          color: isCritical ? '#f2787e' : '#cbd3df',
+                          display: 'inline-flex',
+                          flexWrap: 'wrap',
+                          gap: 4,
+                          alignItems: 'center'
+                        }}
+                      >
+                        <span style={{ textTransform: 'uppercase', color: isCritical ? '#f2787e' : '#cbd3df' }}>{entry.group}</span>
+                        <span style={{ color: isCritical ? '#f2787e' : '#cbd3df' }}>·</span>
+                        <span style={{ textTransform: 'none', color: isCritical ? '#f2787e' : '#cbd3df' }}>{formatRulHours(entry.rul_hours)}</span>
+                      </span>
+                    );
+                  })
                 ) : (
-                  <span className={agv.rul <= 4 ? 'danger-text' : ''}>{agv.rul} hour{agv.rul === 1 ? '' : 's'}</span>
+                  <span className={agv.rul <= 4 ? 'danger-text' : ''} style={{ color: agv.rul <= 4 ? '#f2787e' : '#cbd3df' }}>
+                    {formatRulHours(agv.rul)}
+                  </span>
                 )}
               </strong>
             </div>

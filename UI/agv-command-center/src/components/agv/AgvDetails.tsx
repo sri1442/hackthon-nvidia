@@ -5,7 +5,8 @@
 import React, { useState } from 'react';
 import { AlertCircle, Zap, Navigation, Gauge, Wrench, Shield } from 'lucide-react';
 import { AGV } from '../../services/telemetryService';
-import { StatusBadge } from '../common/StatusBadge';
+import { SeverityBadge } from '../common/SeverityBadge';
+import { formatRulHours } from '../../utils/formatRul';
 
 interface DetailFieldProps {
   label: string;
@@ -67,7 +68,7 @@ export const AgvDetails: React.FC<AgvDetailsProps> = ({ agv, onClose }) => {
             {agv.timestamp && <span className="timestamp">{new Date(agv.timestamp).toLocaleTimeString()}</span>}
           </div>
           <div className="modal-actions">
-            <StatusBadge status={agv.status} />
+            <SeverityBadge severity={agv.severity} />
             <button
               type="button"
               className="close-modal-btn"
@@ -142,8 +143,8 @@ export const AgvDetails: React.FC<AgvDetailsProps> = ({ agv, onClose }) => {
           {activeTab === 'health' && (
             <div>
               <TelemetrySection icon={<AlertCircle size={16} />} title="System Health">
-                <DetailField label="Status" value={agv.status} danger={agv.status === 'Critical'} />
-                <DetailField label="Overall RUL" value={agv.rul} unit="h" danger={agv.rul <= 4} />
+                <DetailField label="Severity" value={agv.severity} danger={agv.severity === 'Critical'} />
+                <DetailField label="Overall RUL" value={formatRulHours(agv.rul)} danger={agv.rul <= 4} />
                 {agv.rulBreakdown && agv.rulBreakdown.length > 0 && (
                   <div className="detail-field full-width">
                     <span className="field-label">Critical RUL Components</span>
@@ -153,7 +154,7 @@ export const AgvDetails: React.FC<AgvDetailsProps> = ({ agv, onClose }) => {
                         return (
                           <div key={idx} className={`rul-item ${isCritical ? 'critical' : ''}`}>
                             <span className="rul-group">{entry.group}</span>
-                            <span className="rul-value">{entry.rul_hours}h</span>
+                            <span className="rul-value">{formatRulHours(entry.rul_hours)}</span>
                           </div>
                         );
                       })}

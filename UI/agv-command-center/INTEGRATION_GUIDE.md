@@ -46,7 +46,7 @@ fetchStreamData()        // Unified fetch for all endpoints
 - **Position data**: Stored separately in `uiPositionMap` (not from API)
 - **Streaming**: Fetches fresh data every 2.2 seconds via `fetchStreamData()`
 - **Issue detection**: Derived from API alerts array
-- **Status mapping**: Comes directly from severity field in API
+- **Severity mapping**: Comes directly from severity field in API
 
 ## Data Flow
 
@@ -69,7 +69,7 @@ The tables now use an intersection of Python and React columns:
 | Column | Source | Used In |
 |--------|--------|---------|
 | `agv_id` / `id` | API | All tables |
-| `severity` / `status` | API | Fleet state, badges |
+| `severity` / `severity` | API | Fleet state, badges |
 | `battery_soh` / `battery` | API (converted %) | Fleet state |
 | `drive_motor_current_a` / `motor` | API | Fleet state, alerts |
 | `rul_hours` / `rul` | API | Maintenance queue |
@@ -148,7 +148,7 @@ To connect to your actual backend:
 {
   // From API
   id: "AGV-11",
-  status: "Critical",
+  severity: "Critical",
   battery: 58,        // battery_soh * 100
   motor: 94,          // drive_motor_current_a
   rul: 1,             // rul_hours

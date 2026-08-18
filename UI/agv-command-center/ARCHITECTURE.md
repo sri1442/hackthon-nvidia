@@ -29,7 +29,7 @@ agv-command-center/
 │   │   │
 │   │   └── common/
 │   │       ├── Header.tsx            # Top navigation bar
-│   │       ├── StatusBadge.tsx       # Status color badge
+│   │       ├── SeverityBadge.tsx       # Severity color badge
 │   │       ├── SectionTitle.tsx      # Section header
 │   │       ├── AuditTrail.tsx        # Event log
 │   │       └── Toast.tsx             # Notification toast
@@ -77,7 +77,7 @@ agv-command-center/
 // Example: AGV interface from telemetryService.ts
 export interface AGV {
   id: string;
-  status: 'Healthy' | 'Warning' | 'Critical';
+  severity: 'Healthy' | 'Warning' | 'Critical';
   battery: number;
   motor: number;
   rul: number;
