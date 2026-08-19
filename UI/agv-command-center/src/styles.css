@@ -966,14 +966,17 @@ main {
 }
 
 .twin-panel {
-    min-height: 503.33px
+    min-height: 503.33px;
+    display: flex;
+    flex-direction: column;
 }
 
 .viewport {
-    height: 397px;
+    flex: 1;
     position: relative;
     overflow: hidden;
-    background: #091018
+    background: #091018;
+    min-height: 0; /* allow flex children to shrink properly */
 }
 
 .viewport-top,

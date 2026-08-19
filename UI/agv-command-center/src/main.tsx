@@ -13,7 +13,7 @@ import { HeroSection } from './components/dashboard/HeroSection';
 import { FleetOverview } from './components/dashboard/FleetOverview';
 import { AgvTable } from './components/agv/AgvTable';
 import { AgvDetails } from './components/agv/AgvDetails';
-import { OmniverseViewer } from './components/omniverse/OmniverseViewer';
+import { OmniverseIframeViewer } from './components/omniverse/OmniverseIframeViewer';
 import { AnomalyList } from './components/anomaly/AnomalyList';
 import { MaintenanceQueue } from './components/maintenance/MaintenanceQueue';
 import { ApprovalPanel } from './components/maintenance/ApprovalPanel';
@@ -186,7 +186,7 @@ function App() {
           />
 
           {selected && (
-            <OmniverseViewer
+            <OmniverseIframeViewer
               agvs={agvs}
               selectedAgv={selected}
               onSelectAgv={handleSelectAgv}
