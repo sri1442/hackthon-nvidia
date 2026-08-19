@@ -190,32 +190,37 @@ export const AgvDetails: React.FC<AgvDetailsProps> = ({ agv, onClose }) => {
               {agv.diagnoses && agv.diagnoses.length > 0 && (
                 <div className="diagnoses-section">
                   <h4>Diagnoses</h4>
-                  {agv.diagnoses.slice(0, 3).map((diagnosis: any, idx: number) => (
-                    <div key={idx} className={`diagnosis-card severity-${diagnosis.diagnosis?.severity || diagnosis.severity}`}>
-                      <div className="diagnosis-header">
-                        <strong>{diagnosis.parameter}</strong>
-                        <span className={`severity-badge ${diagnosis.diagnosis?.severity || diagnosis.severity}`}>
-                          {diagnosis.diagnosis?.severity || diagnosis.severity}
-                        </span>
+                  {agv.diagnoses.slice(0, 3).map((diagnosis: any, idx: number) => {
+                    const diag = diagnosis.diagnosis ?? diagnosis;
+                    const severity = diag?.severity || diagnosis?.severity || 'info';
+                    const parameter = diag?.parameter || diagnosis?.parameter || diagnosis?.parameter;
+                    return (
+                      <div key={idx} className={`diagnosis-card severity-${severity}`}>
+                        <div className="diagnosis-header">
+                          <strong>{parameter}</strong>
+                          <span className={`severity-badge ${severity}`}>
+                            {severity}
+                          </span>
+                        </div>
+                        {diag?.root_cause && (
+                          <p className="root-cause">
+                            <strong>Root Cause:</strong> {diag.root_cause}
+                          </p>
+                        )}
+                        {diag?.explanation && <p className="explanation">{diag.explanation}</p>}
+                        {diag?.action && (
+                          <p className="action">
+                            <strong>Action:</strong> {diag.action}
+                          </p>
+                        )}
+                        {diag?.repair_hours != null && (
+                          <p className="repair-time">
+                            <strong>Est. Repair Time:</strong> {diag.repair_hours}h
+                          </p>
+                        )}
                       </div>
-                      {diagnosis.diagnosis?.root_cause && (
-                        <p className="root-cause">
-                          <strong>Root Cause:</strong> {diagnosis.diagnosis.root_cause}
-                        </p>
-                      )}
-                      {diagnosis.diagnosis?.explanation && <p className="explanation">{diagnosis.diagnosis.explanation}</p>}
-                      {diagnosis.diagnosis?.action && (
-                        <p className="action">
-                          <strong>Action:</strong> {diagnosis.diagnosis.action}
-                        </p>
-                      )}
-                      {diagnosis.diagnosis?.repair_hours && (
-                        <p className="repair-time">
-                          <strong>Est. Repair Time:</strong> {diagnosis.diagnosis.repair_hours}h
-                        </p>
-                      )}
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>

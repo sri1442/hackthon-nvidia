@@ -15,13 +15,39 @@ interface MaintenanceQueueProps {
 }
 
 export const MaintenanceQueue: React.FC<MaintenanceQueueProps> = ({ agvs, onSelectAgv }) => {
-  const getRecommendedAction = (id: string): string => {
-    const actions: Record<string, string> = {
-      'AGV-11': 'Remove from service',
-      'AGV-04': 'Route to charging',
-      'AGV-02': 'Inspect next shift'
+  const getRecommendedAction = (agv: AGV): string => {
+    const raw = (agv as any).diagnosis || (agv as any).diagnoses || (agv as any).rawState?.diagnosis || (agv as any).rawState?.diagnoses || null;
+    if (!raw) return agv.issue || 'Schedule maintenance';
+
+    const normalizeArray = (d: any): any[] => {
+      if (!d) return [];
+      if (Array.isArray(d)) return d;
+      return [d];
     };
-    return actions[id] || 'Schedule maintenance';
+
+    const entries = normalizeArray(raw).flatMap((item: any) => {
+      if (!item) return [];
+      if (item.diagnosis) return normalizeArray(item.diagnosis);
+      return [item];
+    });
+
+    const rawActions = entries.map((e: any) => e?.action || e?.diagnosis?.action || e?.recommendation || e?.diagnosis?.recommendation).filter(Boolean);
+    const mapAction = (a: string) => {
+      const token = String(a).toLowerCase();
+      if (token === 'immediate' || token.includes('remove')) return 'Remove from service';
+      if (token.includes('charge') || token.includes('charging') || token.includes('route')) return 'Route to charging';
+      if (token.includes('inspect') || token.includes('review')) return 'Inspect next shift';
+      if (token.includes('schedule')) return 'Schedule maintenance';
+      return a;
+    };
+
+    const actions = rawActions.map(mapAction);
+    if (actions.length) return [...new Set(actions)].join(', ');
+
+    const fallbacks = entries.map((e: any) => e?.root_cause).filter(Boolean);
+    if (fallbacks.length) return fallbacks.join(', ');
+
+    return agv.issue || 'Schedule maintenance';
   };
 
   const queue = agvs
@@ -68,7 +94,7 @@ export const MaintenanceQueue: React.FC<MaintenanceQueueProps> = ({ agvs, onSele
                 <span className={agv.rul <= 4 ? 'danger-text' : ''}>{formatRulHours(agv.rul)}</span>
               )}
             </span>
-            <span className="action-text">{getRecommendedAction(agv.id)}</span>
+            <span className="action-text">{getRecommendedAction(agv)}</span>
           </button>
         ))}
       </div>

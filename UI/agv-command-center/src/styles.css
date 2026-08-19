@@ -417,7 +417,7 @@ main {
     display: inline-flex;
     padding: 4px 8px;
     border-radius: 999px;
-    font-size: 11px;
+    font-size: 8px;
     font-weight: 700;
     letter-spacing: .04em;
     align-items: center;
@@ -1438,6 +1438,47 @@ main {
     border: 1px solid #25384a;
     background: #0d1922;
     border-radius: 8px;
+    .ai-summary-prominent {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        background: linear-gradient(90deg, rgba(14,24,35,0.9), rgba(16,28,40,0.95));
+        border: 1px solid rgba(42,61,77,0.7);
+        padding: 14px 16px;
+        border-radius: 8px;
+        margin-top: 12px;
+    }
+    .ai-summary-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 42px;
+        height: 42px;
+        background: rgba(86,200,239,0.08);
+        border-radius: 10px;
+    }
+    .ai-summary-content {
+        flex: 1;
+    }
+    .ai-eyebrow {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #c9d8e8;
+        letter-spacing: .06em;
+    }
+    .ai-action {
+        margin: 6px 0 4px 0;
+        font-size: 18px;
+        line-height: 1.1;
+        color: #f2787e;
+        font-weight: 800;
+    }
+    .ai-desc {
+        margin: 0;
+        color: #a9bdcf;
+        font-size: 13px;
+    }
     color: #65c7e8
 }
 

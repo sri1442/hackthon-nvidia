@@ -36,7 +36,7 @@ interface FleetOverviewProps {
 export const FleetOverview: React.FC<FleetOverviewProps> = ({ agvs }) => {
   const critical = agvs.filter(a => ((a.rawState?.severity ?? a.severity) as string).toLowerCase() === 'critical').length;
   const warnings = agvs.filter(a => ((a.rawState?.severity ?? a.severity) as string).toLowerCase() === 'warning').length;
-  const healthy = agvs.filter(a => ((a.rawState?.severity ?? a.severity) as string).toLowerCase() === 'healthy').length;
+  const healthy = agvs.filter(a => ((a.rawState?.severity ?? a.severity) as string).toLowerCase() === 'info').length;
   const queue = agvs.filter(a => a.issue).length;
 
   return (

@@ -179,6 +179,21 @@ export function getRulBreakdown(state: AgvState): AGV['rulBreakdown'] {
   return Array.from(deduped.values()).sort((a, b) => a.rul_hours - b.rul_hours);
 }
 
+/**
+ * Compute average RUL from alert signals on the state.
+ * Falls back to undefined when no alert RULs are present.
+ */
+export function computeAverageAlertRul(state: AgvState): number | undefined {
+  const alerts = Array.isArray(state.alerts) ? state.alerts : [];
+  const rulValues = alerts
+    .map((a: any) => Number(a?.rul_hours))
+    .filter((v: number) => Number.isFinite(v) && v >= 0);
+
+  if (rulValues.length === 0) return undefined;
+  const sum = rulValues.reduce((s: number, v: number) => s + v, 0);
+  return sum / rulValues.length;
+}
+
 function normalizeHealthSignals(state: AgvState): HealthSignal[] {
   const alertSignals = Array.isArray(state.alerts) ? state.alerts : [];
   const diagnosisSignals = Array.isArray(state.diagnoses) ? state.diagnoses : [];
@@ -315,7 +330,12 @@ export function mapStateToAgv(state: AgvState, uiOverrides: Partial<AGV> = {}): 
     severity,
     battery: Math.round(state.battery_soh * 100),
     motor: Math.round(state.drive_motor_current_a),
-    rul: effectiveRul,
+    // RUL: prefer average of alert rul_hours when available, otherwise fallback to effectiveRul
+    rul: (() => {
+      const avg = computeAverageAlertRul(state);
+      if (typeof avg === 'number' && Number.isFinite(avg)) return Math.round(avg);
+      return effectiveRul;
+    })(),
     rulBreakdown: getRulBreakdown(state),
     bearing_vibration: state.mech_bearing_vib_g,
     speed: state.drive_speed_ms,

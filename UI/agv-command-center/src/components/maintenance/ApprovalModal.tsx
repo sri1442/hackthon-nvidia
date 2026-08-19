@@ -2,7 +2,7 @@
  * ApprovalModal Component - Work order approval modal
  */
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Bot, CheckCircle2, XCircle } from 'lucide-react';
 import { AGV } from '../../services/telemetryService';
 import { SeverityBadge } from '../common/SeverityBadge';
@@ -30,13 +30,39 @@ const Evidence: React.FC<EvidenceProps> = ({ label, value, danger }) => (
 );
 
 export const ApprovalModal: React.FC<ApprovalModalProps> = ({ agv, onClose, onApprove, onReject, approval }) => {
-  const getRecommendedAction = (id: string): string => {
-    const actions: Record<string, string> = {
-      'AGV-11': 'Remove from service',
-      'AGV-04': 'Route to charging',
-      'AGV-02': 'Inspect next shift'
+  const getRecommendedAction = (agv: AGV): string => {
+    const raw = (agv as any).diagnosis || (agv as any).diagnoses || (agv as any).rawState?.diagnosis || (agv as any).rawState?.diagnoses || null;
+    if (!raw) return agv.issue || 'Schedule maintenance';
+
+    const normalizeArray = (d: any): any[] => {
+      if (!d) return [];
+      if (Array.isArray(d)) return d;
+      return [d];
     };
-    return actions[id] || 'Schedule maintenance';
+
+    const entries = normalizeArray(raw).flatMap((item: any) => {
+      if (!item) return [];
+      if (item.diagnosis) return normalizeArray(item.diagnosis);
+      return [item];
+    });
+
+    const rawActions = entries.map((e: any) => e?.action || e?.diagnosis?.action || e?.recommendation || e?.diagnosis?.recommendation).filter(Boolean);
+    const mapAction = (a: string) => {
+      const token = String(a).toLowerCase();
+      if (token === 'immediate' || token.includes('remove')) return 'Remove from service';
+      if (token.includes('charge') || token.includes('charging') || token.includes('route')) return 'Route to charging';
+      if (token.includes('inspect') || token.includes('review')) return 'Inspect next shift';
+      if (token.includes('schedule')) return 'Schedule maintenance';
+      return a;
+    };
+
+    const actions = rawActions.map(mapAction);
+    if (actions.length) return [...new Set(actions)].join(', ');
+
+    const fallbacks = entries.map((e: any) => e?.root_cause).filter(Boolean);
+    if (fallbacks.length) return fallbacks.join(', ');
+
+    return agv.issue || 'Schedule maintenance';
   };
 
   const getDiagnosticSummary = (id: string): string => {
@@ -61,7 +87,7 @@ export const ApprovalModal: React.FC<ApprovalModalProps> = ({ agv, onClose, onAp
           <div>
             <span className="eyebrow">RECOMMENDED ACTION</span>
             <h3>
-              {agv.id} · {getRecommendedAction(agv.id)}
+              {agv.id} 
             </h3>
           </div>
           <div className="modal-actions">
@@ -114,11 +140,15 @@ export const ApprovalModal: React.FC<ApprovalModalProps> = ({ agv, onClose, onAp
             <Evidence label="Motor temp" value={`${agv.motor}°C`} danger={agv.motor >= 85} />
             <Evidence label="AI confidence" value={agv.id === 'AGV-11' ? '96%' : '89%'} />
           </div>
-          <div className="ai-summary">
-            <Bot size={17} />
-            <div style={{ marginTop: '-5px' }}>
-              <strong>Diagnostic Agent recommendation</strong>
-              <p>{getDiagnosticSummary(agv.id)}</p>
+
+          <div className="ai-summary ai-summary-prominent">
+            <div className="ai-summary-icon">
+              <Bot size={26} />
+            </div>
+            <div className="ai-summary-content">
+              <div className="ai-eyebrow">Diagnostic Agent recommendation</div>
+              <h4 className="ai-action">{getRecommendedAction(agv)}</h4>
+              <p className="ai-desc">{getDiagnosticSummary(agv.id)}</p>
             </div>
           </div>
           <div className="approval-actions modal-actions-row">
