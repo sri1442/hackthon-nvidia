@@ -197,27 +197,43 @@ export const AgvDetails: React.FC<AgvDetailsProps> = ({ agv, onClose }) => {
                     return (
                       <div key={idx} className={`diagnosis-card severity-${severity}`}>
                         <div className="diagnosis-header">
-                          <strong>{parameter}</strong>
+                          {/* <strong>{parameter}</strong> */}
                           <span className={`severity-badge ${severity}`}>
                             {severity}
                           </span>
                         </div>
-                        {diag?.root_cause && (
-                          <p className="root-cause">
-                            <strong>Root Cause:</strong> {diag.root_cause}
-                          </p>
-                        )}
-                        {diag?.explanation && <p className="explanation">{diag.explanation}</p>}
-                        {diag?.action && (
-                          <p className="action">
-                            <strong>Action:</strong> {diag.action}
-                          </p>
-                        )}
-                        {diag?.repair_hours != null && (
-                          <p className="repair-time">
-                            <strong>Est. Repair Time:</strong> {diag.repair_hours}h
-                          </p>
-                        )}
+                        <div className="diagnosis-table">
+                          {parameter && (
+                            <div className="diag-row">
+                              <div className="diag-label">Parameter Name</div>
+                              <div className="diag-value">{parameter}</div>
+                            </div>
+                          )}
+                          {diag?.root_cause && (
+                            <div className="diag-row">
+                              <div className="diag-label">Root cause</div>
+                              <div className="diag-value root-cause">{diag.root_cause}</div>
+                            </div>
+                          )}
+                          {diag?.explanation && (
+                            <div className="diag-row">
+                              <div className="diag-label">Explanation</div>
+                              <div className="diag-value explanation">{diag.explanation}</div>
+                            </div>
+                          )}
+                          {diag?.action && (
+                            <div className="diag-row">
+                              <div className="diag-label">Action</div>
+                              <div className="diag-value action">{diag.action}</div>
+                            </div>
+                          )}
+                          {diag?.repair_hours != null && (
+                            <div className="diag-row">
+                              <div className="diag-label">Est. Repair Time</div>
+                              <div className="diag-value repair-time">{diag.repair_hours}h</div>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     );
                   })}
@@ -228,22 +244,22 @@ export const AgvDetails: React.FC<AgvDetailsProps> = ({ agv, onClose }) => {
 
           {/* Battery Tab */}
           {activeTab === 'battery' && (
-            <TelemetrySection icon={<Zap size={16} />} title="Battery Metrics">
+              <TelemetrySection icon={<Zap size={16} />} title="Battery Metrics">
               <DetailField
                 label="Voltage"
-                value={agv.battery_voltage_v?.toFixed(2)}
+                value={agv.battery_voltage_v != null ? agv.battery_voltage_v.toFixed(2) : 'N/A'}
                 unit="V"
                 danger={(agv.battery_voltage_v ?? 100) < 21.5}
               />
               <DetailField
                 label="Current"
-                value={agv.battery_current_a?.toFixed(2)}
+                value={agv.battery_current_a != null ? agv.battery_current_a.toFixed(2) : 'N/A'}
                 unit="A"
                 danger={(agv.battery_current_a ?? 0) > 50}
               />
               <DetailField
                 label="Temperature"
-                value={agv.battery_temp_c?.toFixed(1)}
+                value={agv.battery_temp_c != null ? agv.battery_temp_c.toFixed(1) : 'N/A'}
                 unit="°C"
                 danger={(agv.battery_temp_c ?? 0) > 50}
               />
@@ -259,12 +275,12 @@ export const AgvDetails: React.FC<AgvDetailsProps> = ({ agv, onClose }) => {
 
           {/* Navigation Tab */}
           {activeTab === 'nav' && (
-            <TelemetrySection icon={<Navigation size={16} />} title="Navigation Metrics">
-              <DetailField label="Position X" value={agv.nav_position_x_m?.toFixed(2)} unit="m" />
-              <DetailField label="Position Y" value={agv.nav_position_y_m?.toFixed(2)} unit="m" />
+              <TelemetrySection icon={<Navigation size={16} />} title="Navigation Metrics">
+              <DetailField label="Position X" value={agv.nav_position_x_m != null ? agv.nav_position_x_m.toFixed(2) : 'N/A'} unit="m" />
+              <DetailField label="Position Y" value={agv.nav_position_y_m != null ? agv.nav_position_y_m.toFixed(2) : 'N/A'} unit="m" />
               <DetailField
                 label="Heading Error"
-                value={agv.nav_heading_error_deg?.toFixed(3)}
+                value={agv.nav_heading_error_deg != null ? agv.nav_heading_error_deg.toFixed(3) : 'N/A'}
                 unit="°"
                 danger={Math.abs(agv.nav_heading_error_deg ?? 0) > 5}
               />
@@ -276,7 +292,7 @@ export const AgvDetails: React.FC<AgvDetailsProps> = ({ agv, onClose }) => {
               />
               <DetailField
                 label="Path Deviation"
-                value={agv.nav_path_deviation_m?.toFixed(4)}
+                value={agv.nav_path_deviation_m != null ? agv.nav_path_deviation_m.toFixed(4) : 'N/A'}
                 unit="m"
                 danger={(agv.nav_path_deviation_m ?? 0) > 0.5}
               />
@@ -285,17 +301,17 @@ export const AgvDetails: React.FC<AgvDetailsProps> = ({ agv, onClose }) => {
 
           {/* Drive Tab */}
           {activeTab === 'drive' && (
-            <TelemetrySection icon={<Gauge size={16} />} title="Drive Metrics">
+              <TelemetrySection icon={<Gauge size={16} />} title="Drive Metrics">
               <DetailField
                 label="Motor Current"
-                value={agv.drive_motor_current_a?.toFixed(2)}
+                value={agv.drive_motor_current_a != null ? agv.drive_motor_current_a.toFixed(2) : 'N/A'}
                 unit="A"
                 danger={(agv.drive_motor_current_a ?? 0) > 85}
               />
-              <DetailField label="Speed" value={agv.drive_speed_ms?.toFixed(2)} unit="m/s" />
+              <DetailField label="Speed" value={agv.drive_speed_ms != null ? agv.drive_speed_ms.toFixed(2) : 'N/A'} unit="m/s" />
               <DetailField
                 label="Vibration RMS"
-                value={agv.drive_vib_rms_g?.toFixed(4)}
+                value={agv.drive_vib_rms_g != null ? agv.drive_vib_rms_g.toFixed(4) : 'N/A'}
                 unit="g"
                 danger={(agv.drive_vib_rms_g ?? 0) > 0.3}
               />
@@ -305,28 +321,28 @@ export const AgvDetails: React.FC<AgvDetailsProps> = ({ agv, onClose }) => {
 
           {/* Mechanical Tab */}
           {activeTab === 'mech' && (
-            <TelemetrySection icon={<Wrench size={16} />} title="Mechanical Metrics">
+              <TelemetrySection icon={<Wrench size={16} />} title="Mechanical Metrics">
               <DetailField
                 label="Bearing Vibration"
-                value={agv.mech_bearing_vib_g?.toFixed(3)}
+                value={agv.mech_bearing_vib_g != null ? agv.mech_bearing_vib_g.toFixed(3) : 'N/A'}
                 unit="g"
                 danger={(agv.mech_bearing_vib_g ?? 0) > 0.5}
               />
               <DetailField
                 label="Bearing Temperature"
-                value={agv.mech_bearing_temp_c?.toFixed(1)}
+                value={agv.mech_bearing_temp_c != null ? agv.mech_bearing_temp_c.toFixed(1) : 'N/A'}
                 unit="°C"
                 danger={(agv.mech_bearing_temp_c ?? 0) > 70}
               />
-              <DetailField label="Brake Response" value={agv.mech_brake_resp_ms?.toFixed(1)} unit="ms" />
-              <DetailField label="Wheel Diameter" value={agv.mech_wheel_diam_mm?.toFixed(2)} unit="mm" />
+              <DetailField label="Brake Response" value={agv.mech_brake_resp_ms != null ? agv.mech_brake_resp_ms.toFixed(1) : 'N/A'} unit="ms" />
+              <DetailField label="Wheel Diameter" value={agv.mech_wheel_diam_mm != null ? agv.mech_wheel_diam_mm.toFixed(2) : 'N/A'} unit="mm" />
             </TelemetrySection>
           )}
 
           {/* Safety Tab */}
           {activeTab === 'safety' && (
-            <TelemetrySection icon={<Shield size={16} />} title="Safety Metrics">
-              <DetailField label="E-Stop Response" value={agv.safety_estop_resp_ms?.toFixed(1)} unit="ms" />
+              <TelemetrySection icon={<Shield size={16} />} title="Safety Metrics">
+              <DetailField label="E-Stop Response" value={agv.safety_estop_resp_ms != null ? agv.safety_estop_resp_ms.toFixed(1) : 'N/A'} unit="ms" />
               <DetailField
                 label="Lidar Return Rate"
                 value={((agv.safety_lidar_return_rate ?? 0) * 100).toFixed(1)}
@@ -335,10 +351,10 @@ export const AgvDetails: React.FC<AgvDetailsProps> = ({ agv, onClose }) => {
               />
               <DetailField
                 label="Camera FPS"
-                value={agv.safety_camera_fps?.toFixed(1)}
+                value={agv.safety_camera_fps != null ? agv.safety_camera_fps.toFixed(1) : 'N/A'}
                 danger={(agv.safety_camera_fps ?? 30) < 20}
               />
-              <DetailField label="Bumper Sensitivity" value={agv.safety_bumper_sens_n?.toFixed(2)} unit="N" />
+              <DetailField label="Bumper Sensitivity" value={agv.safety_bumper_sens_n != null ? agv.safety_bumper_sens_n.toFixed(2) : 'N/A'} unit="N" />
             </TelemetrySection>
           )}
 
@@ -351,22 +367,41 @@ export const AgvDetails: React.FC<AgvDetailsProps> = ({ agv, onClose }) => {
                 agv.alerts.map((alert: any, idx: number) => (
                   <div key={idx} className={`alert-detail-card severity-${alert.severity}`}>
                     <div className="alert-detail-header">
-                      <strong>{alert.parameter}</strong>
+                      {/* <strong>{alert.parameter}</strong> */}
                       <span className={`severity-badge ${alert.severity}`}>{alert.severity}</span>
                     </div>
-                    <div className="alert-detail-body">
-                      <p>
-                        <strong>Group:</strong> {alert.group}
-                      </p>
-                      <p>
-                        <strong>Value:</strong> {alert.value?.toFixed(2)} {alert.direction === 'above' ? '>' : '<'} {alert.threshold?.toFixed(2)}
-                      </p>
-                      <p>
-                        <strong>RUL Hours:</strong> <span className={alert.rul_hours <= 4 ? 'danger-text' : ''}>{alert.rul_hours?.toFixed(2)}h</span>
-                      </p>
-                      {alert.explanation && <p className="explanation">{alert.explanation}</p>}
-                      {alert.confidence && <p className="confidence">Confidence: {(alert.confidence * 100).toFixed(0)}%</p>}
-                    </div>
+                            <div className="alert-detail-body">
+                              <div className="field-table">
+                                <div className="field-row">
+                                  <div className="field-label">Parameter Name</div>
+                                  <div className="field-value">{alert.parameter}</div>
+                                </div>
+                                <div className="field-row">
+                                  <div className="field-label">Group</div>
+                                  <div className="field-value">{alert.group}</div>
+                                </div>
+                                <div className="field-row">
+                                  <div className="field-label">Value</div>
+                                  <div className="field-value">{alert.value?.toFixed(2)} {alert.direction === 'above' ? '>' : '<'} {alert.threshold?.toFixed(2)}</div>
+                                </div>
+                                <div className="field-row">
+                                  <div className="field-label">RUL Hours</div>
+                                  <div className="field-value"><span className={alert.rul_hours <= 4 ? 'danger-text' : ''}>{alert.rul_hours?.toFixed(2)}h</span></div>
+                                </div>
+                                {alert.explanation && (
+                                  <div className="field-row">
+                                    <div className="field-label">Explanation</div>
+                                    <div className="field-value explanation">{alert.explanation}</div>
+                                  </div>
+                                )}
+                                {alert.confidence && (
+                                  <div className="field-row">
+                                    <div className="field-label">Confidence</div>
+                                    <div className="field-value confidence">{(alert.confidence * 100).toFixed(0)}%</div>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
                   </div>
                 ))
               )}
