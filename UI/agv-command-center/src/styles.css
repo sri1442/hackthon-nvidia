@@ -394,21 +394,52 @@ main {
     gap: 8px;
     color: #d5dce6
 }
-
-.severity-dot {
+.status-dot {
     width: 6px;
     height: 6px;
     border-radius: 50%;
     background: #48d89b
 }
 
-.severity-dot.warning {
+.status-dot.running {
+    background: #48d89b
+}
+
+.status-dot.stopped {
+    background: #6b7280
+}
+
+.status-dot.undermaintenance {
     background: #efb766
 }
 
-.severity-dot.critical {
-    background: #f16d75;
-    box-shadow: 0 0 7px #f16d75
+.status-badge {
+    display: inline-flex;
+    padding: 4px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    align-items: center;
+    justify-content: center;
+}
+
+.status-badge.running {
+    background: #10251d;
+    color: #55dba0;
+    border: 1px solid #24523e;
+}
+
+.status-badge.stopped {
+    background: #20262b;
+    color: #cbd3df;
+    border: 1px solid #394861;
+}
+
+.status-badge.undermaintenance {
+    background: #2a2114;
+    color: #efbf70;
+    border: 1px solid #6f5320;
 }
 
 .severity-badge {

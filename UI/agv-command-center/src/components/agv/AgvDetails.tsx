@@ -50,6 +50,12 @@ export const AgvDetails: React.FC<AgvDetailsProps> = ({ agv, onClose }) => {
   const [activeTab, setActiveTab] = useState<'health' | 'battery' | 'nav' | 'drive' | 'mech' | 'safety' | 'alerts'>('health');
 
   const criticalAlerts = agv.alerts?.filter(a => a.severity === 'critical') || [];
+  const statusStyle =
+    agv.status === 'Running'
+      ? { background: '#10251d', color: '#55dba0', border: '1px solid #24523e' }
+      : agv.status === 'Stopped'
+        ? { background: '#23262d', color: '#dfe7f2', border: '1px solid #394861' }
+        : { background: '#2a2114', color: '#efbf70', border: '1px solid #6f5320' };
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
@@ -64,7 +70,25 @@ export const AgvDetails: React.FC<AgvDetailsProps> = ({ agv, onClose }) => {
         <div className="modal-header">
           <div>
             <span className="eyebrow">AGV DETAILS</span>
-            <h3>{agv.id}</h3>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <h3 style={{ margin: 0 }}>{agv.id}</h3>
+              <span
+                style={{
+                  ...statusStyle,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '4px 8px',
+                  borderRadius: '999px',
+                  fontSize: '10px',
+                  fontWeight: 700,
+                  letterSpacing: '.08em',
+                  textTransform: 'uppercase'
+                }}
+              >
+                {agv.status}
+              </span>
+            </div>
             {agv.timestamp && <span className="timestamp">{new Date(agv.timestamp).toLocaleTimeString()}</span>}
           </div>
           <div className="modal-actions">

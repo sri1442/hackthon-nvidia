@@ -30,10 +30,12 @@ export const AgvRow: React.FC<AgvRowProps> = ({ agv, isSelected, onClick, onDeta
       tabIndex={0}
     >
       <span className="agv-name">
-        <span className={`severity-dot ${agv.severity.toLowerCase()}`}></span>
+        <span className={`status-dot ${agv.status.replace(/\s+/g, '').toLowerCase()}`}></span>
         <strong>{agv.id}</strong>
       </span>
-      <span>{agv.status}</span>
+      <span>
+        <span className={`status-badge ${agv.status.replace(/\s+/g, '').toLowerCase()}`}>{agv.status}</span>
+      </span>
       <span>
         <SeverityBadge severity={agv.severity} />
       </span>
