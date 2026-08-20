@@ -1,10 +1,10 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 
 // Services
 import { useAgvTelemetry } from './hooks/useAgvTelemetry';
 import { useAgvSelection } from './hooks/useAgvSelection';
-import { fetchStreamData, AGV } from './services/telemetryService';
+// telemetryService types and fetcher are unused in this file; telemetry hook provides the data
 import { AuditEntry } from './components/common/AuditTrail';
 
 // Components
@@ -75,7 +75,7 @@ const initialAudit: AuditEntry[] = [
 function App() {
   // Core state management
   const [streaming, setStreaming] = useState(true);
-  const [connected, setConnected] = useState(true);
+  const [connected] = useState(true);
   const [approval, setApproval] = useState<'pending' | 'approved' | 'rejected'>('pending');
   const [toast, setToast] = useState<string | null>(null);
   const [audit, setAudit] = useState<AuditEntry[]>(initialAudit);
@@ -87,6 +87,7 @@ function App() {
   const {
     selectedId,
     detailAgvId,
+    detailAgvTab,
     approvalAgvId,
     selectAgv,
     openAgvDetails,
@@ -130,8 +131,8 @@ function App() {
     setToast(`Focus command sent to Omniverse: ${id}`);
   };
 
-  const handleOpenAgvDetails = (id: string) => {
-    openAgvDetails(id);
+  const handleOpenAgvDetails = (id: string, tab?: 'health' | 'battery' | 'nav' | 'drive' | 'mech' | 'safety' | 'alerts') => {
+    openAgvDetails(id, tab);
     addAudit(`${id} details opened`, 'OPERATOR', 'info');
     setToast(`AGV details opened for ${id}`);
   };
@@ -196,7 +197,7 @@ function App() {
           )}
         </section>
 
-        <AnomalyList agvs={agvs} onSelectAgv={handleSelectAgv} />
+        <AnomalyList agvs={agvs} onOpenDetails={(id, tab) => handleOpenAgvDetails(id, tab)} />
 
         <MaintenanceQueue agvs={agvs} onSelectAgv={handleSelectAgv} />
 
@@ -206,7 +207,7 @@ function App() {
         </section>
       </main>
 
-      {detailAgv && <AgvDetails agv={detailAgv} onClose={closeAgvDetails} />}
+      {detailAgv && <AgvDetails agv={detailAgv} onClose={closeAgvDetails} initialTab={detailAgvTab ?? undefined} />}
 
       {approvalAgv && (
         <ApprovalModal

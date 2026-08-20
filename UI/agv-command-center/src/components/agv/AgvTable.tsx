@@ -23,8 +23,8 @@ export const AgvTable: React.FC<AgvTableProps> = ({ agvs, selectedId, onSelectAg
         <span>AGV</span>
         <span>STATUS</span>
         <span>SEVERITY</span>
-        <span>BATTERY</span>
-        <span>MOTOR</span>
+        <span>BATTERY SOH</span>
+        <span>MOTOR CURRENT (A)</span>
         <span>RUL</span>
         <span>DETAILS</span>
       </div>

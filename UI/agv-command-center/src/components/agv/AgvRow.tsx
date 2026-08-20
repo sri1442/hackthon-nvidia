@@ -45,7 +45,9 @@ export const AgvRow: React.FC<AgvRowProps> = ({ agv, isSelected, onClick, onDeta
         </span>
         {agv.battery}%
       </span>
-      <span className={agv.motor >= 85 ? 'danger-text' : ''}>{agv.motor}°C</span>
+      <span style={{ paddingLeft: '12px' }} className={agv.motor >= 85 ? 'danger-text' : ''}>
+        {agv.motor}
+      </span>
       <span>
         {agv.rulBreakdown && agv.rulBreakdown.length > 0 ? (
           <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2 }}>

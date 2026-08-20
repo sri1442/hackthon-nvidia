@@ -10,10 +10,10 @@ import { AnomalyAlert } from './AnomalyAlert';
 
 interface AnomalyListProps {
   agvs: AGV[];
-  onSelectAgv: (id: string) => void;
+  onOpenDetails: (id: string, tab?: 'health' | 'battery' | 'nav' | 'drive' | 'mech' | 'safety' | 'alerts') => void;
 }
 
-export const AnomalyList: React.FC<AnomalyListProps> = ({ agvs, onSelectAgv }) => {
+export const AnomalyList: React.FC<AnomalyListProps> = ({ agvs, onOpenDetails }) => {
   const anomalies = agvs.filter(a => a.issue).sort((a, b) => b.rul - a.rul);
 
   return (
@@ -26,7 +26,7 @@ export const AnomalyList: React.FC<AnomalyListProps> = ({ agvs, onSelectAgv }) =
               key={agv.id}
               agv={agv}
               rank={index}
-              onClick={() => onSelectAgv(agv.id)}
+              onClick={() => onOpenDetails(agv.id, 'alerts')}
             />
           ))}
         </div>

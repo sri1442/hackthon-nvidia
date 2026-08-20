@@ -328,7 +328,7 @@ export function mapStateToAgv(state: AgvState, uiOverrides: Partial<AGV> = {}): 
     id: state.agv_id,
     status: uiOverrides.status ?? AgvStatus.Running,
     severity,
-    battery: Math.round(state.battery_soh * 100),
+    battery: ((state.battery_soh || 0) * 100).toFixed(2) as unknown as number,
     motor: Math.round(state.drive_motor_current_a),
     // RUL: prefer average of alert rul_hours when available, otherwise fallback to effectiveRul
     rul: (() => {

@@ -44,10 +44,13 @@ const TelemetrySection: React.FC<TelemetrySectionProps> = ({ icon, title, childr
 interface AgvDetailsProps {
   agv: AGV;
   onClose: () => void;
+  initialTab?: 'health' | 'battery' | 'nav' | 'drive' | 'mech' | 'safety' | 'alerts';
 }
 
-export const AgvDetails: React.FC<AgvDetailsProps> = ({ agv, onClose }) => {
-  const [activeTab, setActiveTab] = useState<'health' | 'battery' | 'nav' | 'drive' | 'mech' | 'safety' | 'alerts'>('health');
+export const AgvDetails: React.FC<AgvDetailsProps> = ({ agv, onClose, initialTab }) => {
+  const [activeTab, setActiveTab] = useState<'health' | 'battery' | 'nav' | 'drive' | 'mech' | 'safety' | 'alerts'>(
+    initialTab ?? 'health'
+  );
 
   const criticalAlerts = agv.alerts?.filter(a => a.severity === 'critical') || [];
   const statusStyle =
