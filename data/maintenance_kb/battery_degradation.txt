@@ -1,0 +1,30 @@
+FAULT: Battery State-of-Health (SoH) Degradation
+GROUP: battery
+PARAMETERS: battery_soh, battery_voltage_v, battery_temp_c, battery_current_a
+
+ROOT CAUSES:
+- Cell capacity fade from repeated deep-discharge cycles below 20% SoC.
+- Elevated pack temperature accelerating electrolyte degradation.
+- Cell imbalance across series groups causing early voltage sag under load.
+
+DIAGNOSTIC INDICATORS:
+- battery_soh trending below 0.75 with a consistent downward slope indicates
+  progressive capacity fade rather than a transient sensor fault.
+- battery_voltage_v sagging disproportionately to current draw suggests
+  internal resistance increase (aging cells).
+- battery_temp_c above 60C during normal charge/discharge cycles indicates
+  thermal stress accelerating degradation; above 85C is a hard failure risk.
+
+RECOMMENDED ACTIONS:
+- SoH between 0.55-0.75 (warning): schedule battery pack inspection within
+  next maintenance window (24-48h). Estimated repair time: 2-4 hours
+  (pack swap) or 6-8 hours (cell-level diagnostics + partial replacement).
+- SoH below 0.55 (critical): immediate action. Remove AGV from service.
+  Pack replacement estimated at 3-4 hours including recalibration.
+- If voltage sag correlates with high current draw, check for compromised
+  cell interconnects before assuming full pack replacement is required.
+
+SAFETY NOTES:
+- Do not attempt hot-swap of battery packs while AGV is on an active route.
+- Thermal runaway risk increases sharply above 85C — treat as emergency stop.
+ 

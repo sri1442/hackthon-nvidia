@@ -1,0 +1,33 @@
+FAULT: Drive Motor Wear / Excess Current Draw
+GROUP: drive
+PARAMETERS: drive_motor_current_a, drive_vib_rms_g, drive_speed_ms
+
+ROOT CAUSES:
+- Brush or winding wear increasing electrical resistance and current draw
+  for a given load.
+- Increased mechanical friction (worn bushings/gearbox) requiring more
+  torque, and therefore more current, to maintain commanded speed.
+- Partial motor winding short reducing efficiency.
+
+DIAGNOSTIC INDICATORS:
+- drive_motor_current_a rising linearly over time while drive_speed_ms
+  stays constant is the classic signature of gradual motor wear (increasing
+  resistance/friction compensated by the controller).
+- drive_vib_rms_g rising in parallel with motor current suggests mechanical
+  wear (bearings/gearbox) rather than a purely electrical fault.
+- If current rises but vibration stays flat, suspect winding degradation
+  over mechanical wear.
+
+RECOMMENDED ACTIONS:
+- Motor current 30-45A (warning): schedule motor inspection/service within
+  the next maintenance window. Estimated 4-6 hours for motor service or
+  replacement.
+- Motor current above 45A (critical): immediate action — risk of thermal
+  damage to windings. Estimated 4-6 hours for motor replacement.
+- Check gearbox lubrication and bushing wear before assuming a full motor
+  replacement is required if vibration is only mildly elevated.
+
+SAFETY NOTES:
+- Sustained current above hard failure threshold risks winding insulation
+  breakdown and potential fire hazard — remove from service immediately.
+ 

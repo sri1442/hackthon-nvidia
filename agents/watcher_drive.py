@@ -1,6 +1,5 @@
 """
-Watcher Agent — Battery / Power Group
-Subscribes to Redis, detects anomalies, calls RUL estimator, emits alerts.
+Watcher Agent — Drive / Motion Group
 """
 import os, sys, json, time
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -24,17 +23,15 @@ _load_env()
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
 
 THRESHOLDS = {
-    "battery_soh":       ("below", 0.75),
-    "battery_temp_c":    ("above", 60.0),
-    "battery_voltage_v": ("below", 21.5),
-    "battery_current_a": ("above", 50.0),
+    "drive_motor_current_a": ("above", 30.0),
+    "drive_vib_rms_g":       ("above", 1.0),
+    "drive_speed_ms":        ("above", 2.3),
 }
 
 _HARD = {
-    "battery_soh":       0.55,
-    "battery_temp_c":    85.0,
-    "battery_voltage_v": 19.0,
-    "battery_current_a": 60.0,
+    "drive_motor_current_a": 45.0,
+    "drive_vib_rms_g":       3.0,
+    "drive_speed_ms":        2.5,
 }
 
 def _severity(val, threshold, direction):
@@ -55,7 +52,7 @@ def check_anomaly(row: dict) -> list[dict]:
         if triggered:
             alerts.append({
                 "agv_id":         row["agv_id"],
-                "group":          "battery",
+                "group":          "drive",
                 "parameter":      param,
                 "value":          round(float(val), 4),
                 "threshold":      threshold,
@@ -70,7 +67,7 @@ def run():
     r      = redis.from_url(REDIS_URL, decode_responses=True)
     pubsub = r.pubsub()
     pubsub.psubscribe("agv:*:telemetry")
-    print("[watcher_battery] subscribed — listening ...")
+    print("[watcher_drive] subscribed — listening ...")
 
     for message in pubsub.listen():
         if message["type"] != "pmessage":
@@ -80,11 +77,9 @@ def run():
         alerts = check_anomaly(row)
 
         for alert in alerts:
-            agv_id = alert["agv_id"]
-
+            agv_id  = alert["agv_id"]
             history = np.array(
-                get_history(agv_id, alert["parameter"], n=60),
-                dtype=float
+                get_history(agv_id, alert["parameter"], n=60), dtype=float
             )
 
             if len(history) >= 5:
@@ -99,12 +94,12 @@ def run():
                 alert["confidence"]  = 0.0
                 alert["explanation"] = "Insufficient history for RUL estimation"
 
-            r.publish(f"alerts:battery", json.dumps(alert))
-            r.set(f"alert:{agv_id}:battery", json.dumps(alert))
+            r.publish("alerts:drive", json.dumps(alert))
+            r.set(f"alert:{agv_id}:drive", json.dumps(alert))
             r.rpush("alerts:all", json.dumps(alert))
             r.ltrim("alerts:all", -500, -1)
 
-            print(f"[watcher_battery] ALERT {agv_id} | "
+            print(f"[watcher_drive] ALERT {agv_id} | "
                   f"{alert['parameter']}={alert['value']} | "
                   f"RUL={alert['rul_hours']}h ({alert['rul_model']}) | "
                   f"{alert['severity'].upper()}")

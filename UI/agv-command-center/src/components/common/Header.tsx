@@ -26,7 +26,7 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
         <div>
           <div className="eyebrow">INDUSTRIAL AI</div>
-          <h1>AGV Command Center</h1>
+          <h1>Agentic Fleet Guard</h1>
         </div>
       </div>
       <div className="top-actions">

@@ -1,0 +1,37 @@
+FAULT: Safety Sensor Response Degradation (E-Stop / Sensing)
+GROUP: safety
+PARAMETERS: safety_estop_resp_ms, safety_lidar_return_rate, safety_camera_fps
+
+ROOT CAUSES:
+- Emergency-stop circuit relay or actuator wear increasing response
+  latency.
+- Controller firmware/processing overload delaying the e-stop signal path.
+- Lidar/camera degradation (dust accumulation, lens fouling, sensor aging)
+  reducing return rate or frame rate, indirectly increasing effective
+  response time to hazards.
+
+DIAGNOSTIC INDICATORS:
+- safety_estop_resp_ms rising linearly over time (drift, not a spike)
+  indicates progressive relay/actuator wear rather than a one-off glitch.
+- safety_lidar_return_rate dropping in parallel with e-stop latency
+  suggests a shared cause (e.g. controller processing load) rather than
+  two independent faults.
+- safety_camera_fps dropping alone (without e-stop or lidar changes)
+  usually points to a camera-specific hardware/driver issue.
+
+RECOMMENDED ACTIONS:
+- E-stop response 80-200ms (warning): schedule safety system inspection
+  and relay/actuator test within next maintenance window. Estimated
+  1-2 hours.
+- E-stop response above 200ms (critical): immediate action — this is a
+  safety-critical fault. Remove AGV from service until resolved. Estimated
+  1-2 hours for relay replacement, longer if wiring harness is implicated.
+- Clean lidar/camera optics as a first troubleshooting step before assuming
+  a full sensor replacement is needed.
+
+SAFETY NOTES:
+- E-stop response time is the single most safety-critical parameter in
+  the fleet. Any critical-severity alert on this parameter should trigger
+  immediate removal from the active route, regardless of estimated repair
+  time.
+ 

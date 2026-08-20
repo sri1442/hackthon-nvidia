@@ -1,0 +1,36 @@
+FAULT: Navigation Heading Drift / Encoder Slip
+GROUP: navigation
+PARAMETERS: nav_heading_error_deg, nav_localization_conf, nav_path_deviation_m
+
+ROOT CAUSES:
+- Wheel encoder slip accumulating dead-reckoning error over time.
+- Wheel/tire wear changing effective rolling diameter, invalidating the
+  encoder-to-distance calibration.
+- Sensor fusion drift when localization confidence degrades (e.g. reduced
+  lidar/landmark visibility) and the system relies more heavily on
+  dead-reckoning.
+
+DIAGNOSTIC INDICATORS:
+- nav_heading_error_deg increasing linearly over time (not a step change)
+  is the signature of accumulating encoder drift rather than a discrete
+  sensor failure.
+- nav_path_deviation_m rising in parallel with heading error confirms the
+  drift is affecting actual path-following, not just an internal estimate.
+- If nav_localization_conf drops sharply first and heading error follows,
+  suspect a localization/sensor issue (lidar occlusion, landmark loss)
+  rather than pure mechanical encoder drift.
+
+RECOMMENDED ACTIONS:
+- Heading error 5-12 deg (warning): schedule encoder recalibration and
+  wheel/tire inspection within next maintenance window. Estimated 1-2 hours.
+- Heading error above 12 deg (critical): immediate action — risk of
+  collision or route deviation into restricted zones. Estimated 1-2 hours
+  for recalibration, longer if wheel replacement is needed.
+- Re-run the calibration routine after any wheel or tire replacement.
+
+SAFETY NOTES:
+- Do not allow continued autonomous operation once path deviation exceeds
+  the hard threshold — risk of collision with fixed infrastructure or other
+  AGVs on shared routes.
+
+ 

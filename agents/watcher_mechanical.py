@@ -1,41 +1,42 @@
-"""
-Watcher Agent — Battery / Power Group
-Subscribes to Redis, detects anomalies, calls RUL estimator, emits alerts.
-"""
-import os, sys, json, time
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import json
+import logging
+import os
+import sys
+import time
 
-import redis
 import numpy as np
+import redis
+from dotenv import load_dotenv
+
+load_dotenv()
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
 from ingestion.history_reader import get_history
 from models.rul_estimator import estimate_rul
 
-def _load_env():
-    env_path = os.path.join(os.path.dirname(__file__), '..', '.env')
-    if os.path.exists(env_path):
-        with open(env_path) as f:
-            for line in f:
-                line = line.strip()
-                if line and not line.startswith('#') and '=' in line:
-                    k, v = line.split('=', 1)
-                    os.environ.setdefault(k.strip(), v.strip())
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [watcher_mechanical] %(levelname)s %(message)s",
+    datefmt="%H:%M:%S",
+)
+log = logging.getLogger("watcher_mechanical")
 
-_load_env()
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
+GROUP = "mechanical"
 
 THRESHOLDS = {
-    "battery_soh":       ("below", 0.75),
-    "battery_temp_c":    ("above", 60.0),
-    "battery_voltage_v": ("below", 21.5),
-    "battery_current_a": ("above", 50.0),
+    "mech_bearing_vib_g":  ("above", 0.35),
+    "mech_bearing_temp_c": ("above", 80.0),
+    "mech_brake_resp_ms":  ("above", 150.0),
 }
 
 _HARD = {
-    "battery_soh":       0.55,
-    "battery_temp_c":    85.0,
-    "battery_voltage_v": 19.0,
-    "battery_current_a": 60.0,
+    "mech_bearing_vib_g":  1.50,
+    "mech_bearing_temp_c": 110.0,
+    "mech_brake_resp_ms":  250.0,
 }
+
 
 def _severity(val, threshold, direction):
     ratio = abs(val - threshold) / (abs(threshold) + 1e-9)
@@ -44,6 +45,7 @@ def _severity(val, threshold, direction):
     elif ratio > 0.08:
         return "warning"
     return "info"
+
 
 def check_anomaly(row: dict) -> list[dict]:
     alerts = []
@@ -55,7 +57,7 @@ def check_anomaly(row: dict) -> list[dict]:
         if triggered:
             alerts.append({
                 "agv_id":         row["agv_id"],
-                "group":          "battery",
+                "group":          GROUP,
                 "parameter":      param,
                 "value":          round(float(val), 4),
                 "threshold":      threshold,
@@ -66,17 +68,22 @@ def check_anomaly(row: dict) -> list[dict]:
             })
     return alerts
 
+
 def run():
-    r      = redis.from_url(REDIS_URL, decode_responses=True)
+    r = redis.from_url(REDIS_URL, decode_responses=True)
     pubsub = r.pubsub()
     pubsub.psubscribe("agv:*:telemetry")
-    print("[watcher_battery] subscribed — listening ...")
+    log.info("Watcher [mechanical] started - monitoring: %s", ", ".join(THRESHOLDS.keys()))
 
     for message in pubsub.listen():
         if message["type"] != "pmessage":
             continue
 
-        row    = json.loads(message["data"])
+        try:
+            row = json.loads(message["data"])
+        except json.JSONDecodeError:
+            continue
+
         alerts = check_anomaly(row)
 
         for alert in alerts:
@@ -84,7 +91,7 @@ def run():
 
             history = np.array(
                 get_history(agv_id, alert["parameter"], n=60),
-                dtype=float
+                dtype=float,
             )
 
             if len(history) >= 5:
@@ -99,15 +106,21 @@ def run():
                 alert["confidence"]  = 0.0
                 alert["explanation"] = "Insufficient history for RUL estimation"
 
-            r.publish(f"alerts:battery", json.dumps(alert))
-            r.set(f"alert:{agv_id}:battery", json.dumps(alert))
+            r.publish(f"alerts:{GROUP}", json.dumps(alert))
+            r.set(f"alert:{agv_id}:{GROUP}", json.dumps(alert))
             r.rpush("alerts:all", json.dumps(alert))
             r.ltrim("alerts:all", -500, -1)
 
-            print(f"[watcher_battery] ALERT {agv_id} | "
-                  f"{alert['parameter']}={alert['value']} | "
-                  f"RUL={alert['rul_hours']}h ({alert['rul_model']}) | "
-                  f"{alert['severity'].upper()}")
+            log.info(
+                "ALERT %s | %s=%.4f | RUL=%.1fh (%s) | %s",
+                agv_id,
+                alert["parameter"],
+                alert["value"],
+                alert["rul_hours"],
+                alert["rul_model"],
+                alert["severity"].upper(),
+            )
+
 
 if __name__ == "__main__":
     run()

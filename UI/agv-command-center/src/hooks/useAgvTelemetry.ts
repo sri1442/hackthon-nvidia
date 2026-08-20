@@ -36,7 +36,7 @@ export function useAgvTelemetry(streaming: boolean, uiPositionMap: Record<string
       } catch (error) {
         console.error('Stream fetch error:', error);
       }
-    }, 2200);
+    }, 10000);
 
     return () => clearInterval(timer);
   }, [streaming, uiPositionMap]);

@@ -1,0 +1,35 @@
+FAULT: Bearing Spall / Outer Race Defect
+GROUP: mechanical
+PARAMETERS: mech_bearing_vib_g, mech_bearing_temp_c, mech_brake_resp_ms
+
+ROOT CAUSES:
+- Outer race spalling from cumulative fatigue loading (classic PHM 2012
+  bearing run-to-failure pattern: sudden step-change in vibration amplitude).
+- Inadequate lubrication leading to metal-to-metal contact and localized
+  pitting.
+- Contamination ingress (dust/debris) accelerating surface fatigue.
+
+DIAGNOSTIC INDICATORS:
+- mech_bearing_vib_g showing a sudden step-change (not gradual drift) is the
+  signature of a spall event — the defect has already initiated and will
+  propagate rapidly (hours, not days).
+- A gradual vibration rise combined with mech_bearing_temp_c rising in
+  parallel indicates progressive wear rather than a discrete spall event.
+- mech_brake_resp_ms increasing alongside bearing vibration can indicate the
+  defect is affecting drivetrain-adjacent components.
+
+RECOMMENDED ACTIONS:
+- Step-change detected (critical): immediate action. This pattern has a
+  short remaining-useful-life window (often under 8 hours per PHM 2012
+  bearing degradation curves). Replace bearing assembly — estimated 2-3
+  hours.
+- Gradual rise (warning): schedule replacement within the next maintenance
+  window. Estimated 2-3 hours for bearing assembly replacement.
+- Always inspect the adjacent race and housing for secondary damage before
+  reassembly.
+
+SAFETY NOTES:
+- Do not continue operation once a step-change spall pattern is confirmed —
+  risk of sudden mechanical seizure.
+
+ 
